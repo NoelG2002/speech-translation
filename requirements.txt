@@ -1,6 +1,4 @@
 fastapi
 uvicorn
-nemo_toolkit[asr]
-transformers
-torch
-soundfile
+requests
+python-dotenv
