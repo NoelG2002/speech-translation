@@ -1,16 +1,6 @@
 services:
-  - name: bhashini-backend  # Change this to your service name
+  - name: bhasini-backend
     type: web
-    runtime: python
+    env: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: PORT
-        value: 8000
-      - key: BHASHINI_API_URL
-        sync: false
-      - key: BHASHINI_API_KEY
-        sync: false
-      - key: BHASHINI_USER_ID
-        sync: false
-    autoDeploy: true
