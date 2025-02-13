@@ -22,10 +22,31 @@ class TranslationRequest(BaseModel):
 
 # ✅ Language Mapping
 languages = {
-    1: "hi", 2: "gom", 3: "kn", 4: "doi", 5: "brx", 6: "ur", 7: "ta", 8: "ks", 9: "as",
-    10: "bn", 11: "mr", 12: "sd", 13: "mai", 14: "pa", 15: "ml", 16: "mni", 17: "te",
-    18: "sa", 19: "ne", 20: "sat", 21: "gu", 22: "or"
+    0: "en",  # English
+    1: "hi",  # Hindi
+    2: "gom", # Gom
+    3: "kn",  # Kannada
+    4: "doi", # Dogri
+    5: "brx", # Bodo
+    6: "ur",  # Urdu
+    7: "ta",  # Tamil
+    8: "ks",  # Kashmiri
+    9: "as",  # Assamese
+    10: "bn", # Bengali
+    11: "mr", # Marathi
+    12: "sd", # Sindhi
+    13: "mai", # Maithili
+    14: "pa",  # Punjabi
+    15: "ml",  # Malayalam
+    16: "mni", # Manipuri
+    17: "te",  # Telugu
+    18: "sa",  # Sanskrit
+    19: "ne",  # Nepali
+    20: "sat", # Santali
+    21: "gu",  # Gujarati
+    22: "or"   # Odia
 }
+
 
 # ✅ Root Endpoint (Returns Available Languages)
 @app.get('/')
