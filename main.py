@@ -55,8 +55,8 @@ languages = {
 # ✅ Bhashini API credentials
 HEADERS = {
     "Content-Type": "application/json",
-    "userID": "your_user_id",  # Replace with Bhashini API user ID
-    "ulcaApiKey": "your_ulca_api_key"  # Replace with Bhashini API Key
+    "userID": "1cfb9fb0efe34593aa1a75189df64199",  # Replace with Bhashini API user ID
+    "ulcaApiKey": "42bb498f9a-14ee-4395-8d6a-57a2f947d32a"  # Replace with Bhashini API Key
 }
 
 # ✅ Root Endpoint (Available Languages)
