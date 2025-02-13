@@ -3,6 +3,17 @@ import requests
 import os
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "Bhashini API is running on Render!"}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))  # Render provides PORT as an environment variable
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 app = FastAPI()
 
