@@ -13,7 +13,7 @@ class TranslationRequest(BaseModel):
     source_text: str
     source_lang: str
     target_lang: str
-
+@app.head("/")
 @app.get("/")
 def root():
     return {"message": "Bhashini Translation API is running!"}
