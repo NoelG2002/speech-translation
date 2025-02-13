@@ -49,6 +49,7 @@ languages = {
 
 
 # ✅ Root Endpoint (Returns Available Languages)
+@app.home('/')
 @app.get('/')
 async def root():
     return {k: v.capitalize() for k, v in languages.items()}
