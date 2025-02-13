@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: speech-api
-    runtime: python
-    repo: https://github.com/YOUR_USERNAME/speech-pipeline
-    branch: main
+    name: udyat-translation-api
+    env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "bash start.sh"
-    plan: free
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port 10000"
+    envVars:
+      - key: UDYAT_API_KEY
+        sync: false
