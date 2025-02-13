@@ -1,30 +1,25 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import requests
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env (only for local testing)
-load_dotenv()
 
 app = FastAPI()
 
-# Bhashini API Credentials (Stored in Render)
-BHASHINI_API_URL = os.getenv("BHASHINI_API_URL", "https://udyat-api.bhashini.gov.in/translate")
 BHASHINI_API_KEY = os.getenv("BHASHINI_API_KEY")
 BHASHINI_USER_ID = os.getenv("BHASHINI_USER_ID")
+BHASHINI_API_URL = "https://udyat-api.bhashini.gov.in/translate"
 
-HEADERS = {
-    "Authorization": f"Bearer {BHASHINI_API_KEY}",
-    "Content-Type": "application/json",
-    "userID": BHASHINI_USER_ID  # Include User ID in headers
-}
-@app.head("/")
+class TranslationRequest(BaseModel):
+    source_text: str
+    source_lang: str
+    target_lang: str
+
 @app.get("/")
 def root():
     return {"message": "Bhashini Translation API is running!"}
 
 @app.post("/translate/")
-def translate_text(source_text: str, source_lang: str, target_lang: str):
+def translate_text(request: TranslationRequest):
     if not BHASHINI_API_KEY or not BHASHINI_USER_ID:
         raise HTTPException(status_code=500, detail="Missing API Key or User ID")
 
@@ -34,19 +29,25 @@ def translate_text(source_text: str, source_lang: str, target_lang: str):
                 "taskType": "translation",
                 "config": {
                     "language": {
-                        "sourceLanguage": source_lang,
-                        "targetLanguage": target_lang
-                    }
+                        "sourceLanguage": request.source_lang,
+                        "targetLanguage": request.target_lang
+                    },
+                    "input": request.source_text
                 }
             }
         ],
-        "inputData": {"input": [{"source": source_text}]}
+        "userId": BHASHINI_USER_ID
     }
 
-    response = requests.post(BHASHINI_API_URL, json=payload, headers=HEADERS)
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {BHASHINI_API_KEY}"
+    }
+
+    response = requests.post(BHASHINI_API_URL, json=payload, headers=headers)
     
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail=response.json())
 
-    translated_text = response.json()["pipelineResponse"][0]["output"][0]["target"]
+    translated_text = response.json().get("output", "Translation failed")
     return {"translated_text": translated_text}
