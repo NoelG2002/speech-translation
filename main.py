@@ -18,7 +18,7 @@ HEADERS = {
     "Content-Type": "application/json",
     "userID": BHASHINI_USER_ID  # Include User ID in headers
 }
-
+@app.head("/")
 @app.get("/")
 def root():
     return {"message": "Bhashini Translation API is running!"}
