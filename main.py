@@ -66,7 +66,7 @@ async def root():
     return {k: v.capitalize() for k, v in languages.items()}
 
 # ✅ Translation Endpoint
-@app.post("/bhashini/translate")
+@app.post("/bhashini/translate", response_model=dict)
 async def translate(request: TranslationRequest):
     source_language = languages.get(request.source_language)
     target_language = languages.get(request.target_language)
