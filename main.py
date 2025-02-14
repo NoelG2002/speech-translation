@@ -8,8 +8,8 @@ from pydantic import BaseModel
 app = FastAPI()
 
 # Load sensitive credentials from Render environment variables
-ULCA_API_KEY = os.getenv("BHASHINI_API_KEY")
-ULCA_USER_ID = os.getenv("BHASHINI_USER_ID")
+ULCA_API_KEY = os.getenv("ULCA_API_KEY")
+ULCA_USER_ID = os.getenv("ULCA_USER_ID")
 ULCA_ENDPOINT = os.getenv("Ulca_endpoint")
 
 
