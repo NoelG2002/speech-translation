@@ -1,10 +1,24 @@
+#services:
+ # - type: web
+  #  name: fastapi-translation-api
+   # env: python
+    #buildCommand: "pip install -r requirements.txt"
+    #startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    #plan: free
+    #envVars:
+     # - key: PORT
+      #  value: 8000
 services:
   - type: web
-    name: fastapi-translation-api
+    name: bhashini-api-backend
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port 5000"
     envVars:
+      - key: ULCA_API_KEY
+        sync: false
+      - key: ULCA_USER_ID
+        sync: false
       - key: PORT
         value: 8000
