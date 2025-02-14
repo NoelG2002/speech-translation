@@ -178,7 +178,7 @@ async def translate(request: TranslationRequest):
         "translated_content": translated_content
     }
 # ✅ Speech-to-Text (STT) Endpoint
-@app.post("/bhashini/stt")
+@app.post("/bhashini/stt", response_model=dict )
 async def speech_to_text(language: int, audio: UploadFile = File(...)):
     lang_code = languages.get(language)
     if not lang_code:
