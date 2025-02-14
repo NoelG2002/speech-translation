@@ -183,7 +183,7 @@ async def speech_to_text(audio: UploadFile = File(...), language: str = Form(...
     files = {"audio": (audio.filename, await audio.read(), audio.content_type)}
     data = {"language": language}
 
-    response = requests.post(BHASHINI_STT_URL, files=files, data=data)
+    response = requests.post("https://kamco-bhasini.vercel.app/bhashini/stt", files=files, data=data)
     
     return response.json()
 
