@@ -133,7 +133,7 @@ class Payloads(PipelineConfig):
 
 # Initialize payload handler
 pipeline = Payloads()
-    
+
     
 # FastAPI Request Models
 class AudioRequest(BaseModel):
@@ -147,6 +147,41 @@ class TextRequest(BaseModel):
 @app.get("/")
 def home():
     return {"message": "Bhashini API FastAPI Backend is running!"}
+
+@app.post("/translate")
+def translate_text(request: TranslateRequest):
+    """Handles Translation requests."""
+    try:
+        # Update the pipeline configuration for translation
+        pipeline.sourceLanguage = request.source_language
+        pipeline.targetLanguage = request.target_language
+        
+        # Generate the translation payload
+        payload = pipeline.nmt_payload(request.text)
+        
+        # Send the request to the Bhashini endpoint
+        response = requests.post(
+            ULCA_ENDPOINT,
+            data=payload,
+            headers={
+                "ulcaApiKey": ULCA_API_KEY,
+                "userID": ULCA_USER_ID,
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Check if the response is successful
+        if response.status_code == 200:
+            # Extract the translated text from the response
+            translated_content = response.json().get("output", {}).get("translated", "")
+            return {"translated_content": translated_content}
+        
+        # Handle any errors from the Bhashini API
+        raise HTTPException(status_code=response.status_code, detail="Translation request failed.")
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @app.post("/stt")
