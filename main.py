@@ -178,44 +178,46 @@ async def translate(request: TranslationRequest):
         "translated_content": translated_content
     }
 # ✅ Speech-to-Text (STT) Endpoint
-#from fastapi import FastAPI, File, UploadFile
-#app = FastAPI()
 @app.post("/bhashini/stt")
-async def speech_to_text(language: int, audio: UploadFile = File(...)):
-    return {"transcription": "Sample text"}
+async def speech_to_text(
+    audio: UploadFile = File(...),
+    source_language: str = Form(...)
+):
+    try:
+        # Read the uploaded file
+        audio_bytes = await audio.read()
+        
+        # Convert audio to base64
+        base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
 
-@app.post("/bhashini/stt" )
-async def speech_to_text(language: int, audio: UploadFile = File(...)):
-    lang_code = languages.get(language)
-    if not lang_code:
-        raise HTTPException(status_code=400, detail="Invalid language code")
-
-    audio_bytes = await audio.read()
-    encoded_audio = base64.b64encode(audio_bytes).decode('utf-8')
-
-    payload = {
-        "pipelineTasks": [
-            {
-                "taskType": "asr",
-                "config": {
-                    "language": {"sourceLanguage": lang_code}
-                }
-            }
-        ],
-        "inputData": {
-            "audio": [{"audioContent": encoded_audio}]
+        # Prepare payload for Bhashini API
+        request_payload = {
+            "ulcaUserId": userID,
+            "ulcaApiKey": ulcaApiKey,
+            "pipeLineId": "64392f96daac500b55c543cd",
+            "audioData": base64_audio,
+            "sourceLanguage": source_language
         }
-    }
 
-    response = requests.post('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/compute', json=payload, headers=HEADERS)
+        # Make API request to Bhashini for STT
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(ULCA_ENDPOINT, json=request_payload, headers=headers)
 
-    if response.status_code != 200:
-        return {"status_code": response.status_code, "message": "STT failed", "transcription": None}
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Bhashini API error")
 
-    response_data = response.json()
-    transcription = response_data.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("source")
+        # Parse Bhashini API response
+        pipeline_response = response.json()
+        transcription = pipeline_response.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("source", "")
 
-    return {"status_code": 200, "message": "STT successful", "transcription": transcription}
+        if not transcription:
+            raise HTTPException(status_code=500, detail="Failed to transcribe audio")
+
+        return {"transcription": transcription}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ✅ Text-to-Speech (TTS) Endpoint
 @app.post("/bhashini/tts")
