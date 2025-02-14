@@ -179,7 +179,7 @@ class TextRequest(BaseModel):
 @app.get("/")
 async def root():
     return {
-        0: "en"
+        0: "en",
         1: "Hindi",
         2: "Gom",
         3: "Kannada",
