@@ -133,11 +133,39 @@ class Payloads(PipelineConfig):
 
 # Initialize payload handler
 pipeline = Payloads()
+languages = {
+    0: "en",
+    1: "hi",
+    2: "gom",
+    3: "kn",
+    4: "doi",
+    5: "brx",
+    6: "ur",
+    7: "ta",
+    8: "ks",
+    9: "as",
+    10: "bn",
+    11: "mr",
+    12: "sd",
+    13: "mai",
+    14: "pa",
+    15: "ml",
+    16: "mni",
+    17: "te",
+    18: "sa",
+    19: "ne",
+    20: "sat",
+    21: "gu",
+    22: "or"
+}
 
+
+
+    
 class TranslationRequest(BaseModel):
-    source_language: str
+    source_language: int
     content: str
-    target_language: str
+    target_language: int
     
 # FastAPI Request Models
 class AudioRequest(BaseModel):
@@ -149,6 +177,33 @@ class TextRequest(BaseModel):
 
 
 @app.get("/")
+async def root():
+    return {
+        0: "en"
+        1: "Hindi",
+        2: "Gom",
+        3: "Kannada",
+        4: "Dogri",
+        5: "Bodo",
+        6: "Urdu",
+        7: "Tamil",
+        8: "Kashmiri",
+        9: "Assamese",
+        10: "Bengali",
+        11: "Marathi",
+        12: "Sindhi",
+        13: "Maithili",
+        14: "Punjabi",
+        15: "Malayalam",
+        16: "Manipuri",
+        17: "Telugu",
+        18: "Sanskrit",
+        19: "Nepali",
+        20: "Santali",
+        21: "Gujarati",
+        22: "Odia"
+    }
+
 def home():
     return {"message": "Bhashini API FastAPI Backend is running!"}
 
