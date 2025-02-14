@@ -125,7 +125,11 @@ class Payloads(PipelineConfig):
 # Initialize payload handler
 pipeline = Payloads()
 
-
+class TranslationRequest(BaseModel):
+    source_language: str
+    content: str
+    target_language: str
+    
 # FastAPI Request Models
 class AudioRequest(BaseModel):
     audio: str
