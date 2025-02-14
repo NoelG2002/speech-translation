@@ -178,66 +178,134 @@ async def translate(request: TranslationRequest):
         "translated_content": translated_content
     }
 # ✅ Speech-to-Text (STT) Endpoint
-@app.post("/bhashini/stt")
-async def speech_to_text(language: int, audio: UploadFile = File(...)):
-    lang_code = languages.get(language)
-    if not lang_code:
+@app.post('/bhashini/stt', response_model=dict)
+async def speech_to_text(language: str, audio: UploadFile = File(...)):
+    # Get the correct language mapping
+    source_language = languages.get(language)
+    if not source_language:
         raise HTTPException(status_code=400, detail="Invalid language code")
 
-    audio_bytes = await audio.read()
-    encoded_audio = base64.b64encode(audio_bytes).decode('utf-8')
-
+    # ✅ Step 1: Get STT Model Service ID
     payload = {
         "pipelineTasks": [
             {
                 "taskType": "asr",
                 "config": {
-                    "language": {"sourceLanguage": lang_code}
+                    "language": {"sourceLanguage": source_language}
                 }
             }
         ],
-        "inputData": {
-            "audio": [{"audioContent": encoded_audio}]
-        }
+        "pipelineRequestConfig": {"pipelineId": "64392f96daac500b55c543cd"}
     }
 
-    response = requests.post('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/compute', json=payload, headers=HEADERS)
+    headers = {
+        "Content-Type": "application/json",
+        "userID": "1cfb9fb0efe34593aa1a75189df64199",
+        "ulcaApiKey": "42bb498f9a-14ee-4395-8d6a-57a2f947d32a"
+    }
+
+    response = requests.post("https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline", json=payload, headers=headers)
 
     if response.status_code != 200:
-        return {"status_code": response.status_code, "message": "STT failed", "transcription": None}
+        return {"status_code": response.status_code, "message": "Error fetching STT model service ID"}
 
     response_data = response.json()
-    transcription = response_data.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("source")
+    service_id = response_data.get("pipelineResponseConfig", [{}])[0].get("config", [{}])[0].get("serviceId")
 
-    return {"status_code": 200, "message": "STT successful", "transcription": transcription}
+    if not service_id:
+        return {"status_code": 500, "message": "STT Service ID not found"}
+
+    # ✅ Step 2: Send Audio for Transcription
+    callback_url = response_data.get("pipelineInferenceAPIEndPoint", {}).get("callbackUrl")
+    inference_api_key = response_data.get("pipelineInferenceAPIEndPoint", {}).get("inferenceApiKey", {})
+
+    if not callback_url or not inference_api_key:
+        return {"status_code": 500, "message": "Invalid STT callback URL or API key"}
+
+    headers2 = {inference_api_key["name"]: inference_api_key["value"]}
+
+    files = {"audio": (audio.filename, audio.file, "audio/wav")}
+    compute_response = requests.post(callback_url, files=files, headers=headers2)
+
+    if compute_response.status_code != 200:
+        return {"status_code": compute_response.status_code, "message": "Error during STT processing"}
+
+    compute_response_data = compute_response.json()
+    transcript = compute_response_data.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("source")
+
+    if not transcript:
+        return {"status_code": 500, "message": "No STT output found"}
+
+    return {"status_code": 200, "message": "STT successful", "transcription": transcript}
 
 # ✅ Text-to-Speech (TTS) Endpoint
-@app.post("/bhashini/tts")
+
+@app.post('/bhashini/tts', response_model=dict)
 async def text_to_speech(request: TTSRequest):
-    lang_code = languages.get(request.language)
-    if not lang_code:
+    # Get correct language mapping
+    language = languages.get(request.language)
+    if not language:
         raise HTTPException(status_code=400, detail="Invalid language code")
 
+    # ✅ Step 1: Get TTS Model Service ID
     payload = {
         "pipelineTasks": [
             {
                 "taskType": "tts",
+                "config": {"language": {"sourceLanguage": language}}
+            }
+        ],
+        "pipelineRequestConfig": {"pipelineId": "64392f96daac500b55c543cd"}
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "userID": "1cfb9fb0efe34593aa1a75189df64199",
+        "ulcaApiKey": "42bb498f9a-14ee-4395-8d6a-57a2f947d32a"
+    }
+
+    response = requests.post("https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline", json=payload, headers=headers)
+
+    if response.status_code != 200:
+        return {"status_code": response.status_code, "message": "Error fetching TTS model service ID"}
+
+    response_data = response.json()
+    service_id = response_data.get("pipelineResponseConfig", [{}])[0].get("config", [{}])[0].get("serviceId")
+
+    if not service_id:
+        return {"status_code": 500, "message": "TTS Service ID not found"}
+
+    # ✅ Step 2: Generate Speech
+    callback_url = response_data.get("pipelineInferenceAPIEndPoint", {}).get("callbackUrl")
+    inference_api_key = response_data.get("pipelineInferenceAPIEndPoint", {}).get("inferenceApiKey", {})
+
+    if not callback_url or not inference_api_key:
+        return {"status_code": 500, "message": "Invalid TTS callback URL or API key"}
+
+    compute_payload = {
+        "pipelineTasks": [
+            {
+                "taskType": "tts",
                 "config": {
-                    "language": {"sourceLanguage": lang_code}
+                    "language": {"sourceLanguage": language},
+                    "serviceId": service_id
                 }
             }
         ],
-        "inputData": {
-            "input": [{"source": request.text}]
-        }
+        "inputData": {"input": [{"source": request.text}]}
     }
 
-    response = requests.post('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/compute', json=payload, headers=HEADERS)
+    headers2 = {inference_api_key["name"]: inference_api_key["value"]}
 
-    if response.status_code != 200:
-        return {"status_code": response.status_code, "message": "TTS failed", "audio_content": None}
+    compute_response = requests.post(callback_url, json=compute_payload, headers=headers2)
 
-    response_data = response.json()
-    audio_content = response_data.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("audioContent")
+    if compute_response.status_code != 200:
+        return {"status_code": compute_response.status_code, "message": "Error during TTS processing"}
+
+    compute_response_data = compute_response.json()
+    audio_content = compute_response_data.get("pipelineResponse", [{}])[0].get("output", [{}])[0].get("audioContent")
+
+    if not audio_content:
+        return {"status_code": 500, "message": "No TTS output found"}
 
     return {"status_code": 200, "message": "TTS successful", "audio_content": audio_content}
