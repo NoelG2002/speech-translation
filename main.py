@@ -133,21 +133,7 @@ class Payloads(PipelineConfig):
 
 # Initialize payload handler
 pipeline = Payloads()
-languages: { [key: string]: string } = {
-    "en": "English", "hi": "Hindi", "gom": "Gom", "kn": "Kannada", "doi": "Dogri",
-    "brx": "Bodo", "ur": "Urdu", "ta": "Tamil", "ks": "Kashmiri", "as": "Assamese",
-    "bn": "Bengali", "mr": "Marathi", "sd": "Sindhi", "mai": "Maithili", "pa": "Punjabi",
-    "ml": "Malayalam", "mni": "Manipuri", "te": "Telugu", "sa": "Sanskrit", "ne": "Nepali",
-    "sat": "Santali", "gu": "Gujarati", "or": "Odia"
-  };
-
-
-
     
-class TranslationRequest(BaseModel):
-    source_language: str
-    content: str
-    target_language: str
     
 # FastAPI Request Models
 class AudioRequest(BaseModel):
@@ -159,111 +145,10 @@ class TextRequest(BaseModel):
 
 
 @app.get("/")
-async def root():
-    return {
-    "en": "English", "hi": "Hindi", "gom": "Gom", "kn": "Kannada", "doi": "Dogri",
-    "brx": "Bodo", "ur": "Urdu", "ta": "Tamil", "ks": "Kashmiri", "as": "Assamese",
-    "bn": "Bengali", "mr": "Marathi", "sd": "Sindhi", "mai": "Maithili", "pa": "Punjabi",
-    "ml": "Malayalam", "mni": "Manipuri", "te": "Telugu", "sa": "Sanskrit", "ne": "Nepali",
-    "sat": "Santali", "gu": "Gujarati", "or": "Odia"
-    }
-
 def home():
     return {"message": "Bhashini API FastAPI Backend is running!"}
 
-@app.post('/translate', response_model=dict)
-async def translate(request: TranslationRequest):
-    source_language = languages[request.source_language]
-    content = request.content
-    target_language = languages[request.target_language] 
 
-    payload = {
-        "pipelineTasks": [
-            {
-                "taskType": "translation",
-                "config": {
-                    "language": {
-                        "sourceLanguage": source_language,
-                        "targetLanguage": target_language
-                    }
-                }
-            }
-        ],
-        "pipelineRequestConfig": {
-            "pipelineId" : "64392f96daac500b55c543cd"
-        }
-    }
-
-    headers = {
-        "Content-Type": "application/json",
-        "userID": ULCA_USER_ID,
-        "ulcaApiKey": ULCA_API_KEY
-    }
-
-    response = requests.post('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline', json=payload, headers=headers)
-
-    if response.status_code == 200:
-        response_data = response.json()
-        service_id = response_data["pipelineResponseConfig"][0]["config"][0]["serviceId"]
-
-        compute_payload = {
-            "pipelineTasks": [
-                {
-                    "taskType": "translation",
-                    "config": {
-                        "language": {
-                            "sourceLanguage": source_language,
-                            "targetLanguage": target_language
-                        },
-                        "serviceId": service_id
-                    }
-                }
-            ],
-            "inputData": {
-                "input": [
-                    {
-                        "source": content
-                    }
-                ],
-                "audio": [
-                    {
-                        "audioContent": None
-                    }
-                ]
-            }
-        }
-
-        callback_url = response_data["pipelineInferenceAPIEndPoint"]["callbackUrl"]
-        
-        headers2 = {
-            "Content-Type": "application/json",
-            response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["name"]:
-                response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["value"]
-        }
-
-        compute_response = requests.post(callback_url, json=compute_payload, headers=headers2)
-
-        if compute_response.status_code == 200:
-            compute_response_data = compute_response.json()
-            translated_content = compute_response_data["pipelineResponse"][0]["output"][0]["target"]
-            return {
-                "status_code": 200,
-                "message": "Translation successful",
-                "translated_content": translated_content
-            }
-        else:
-            return {
-                "status_code": compute_response.status_code,
-                "message": "Error in translation",
-                "translated_content": None
-            }
-    else:
-        return {
-            "status_code": response.status_code,
-            "message": "Error in translation request",
-            "translated_content": None
-        }
-        
 @app.post("/stt")
 def speech_to_text(request: AudioRequest):
     """Handles Speech-to-Text (ASR) requests."""
