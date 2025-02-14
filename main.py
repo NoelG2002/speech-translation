@@ -192,8 +192,8 @@ async def speech_to_text(
 
         # Prepare payload for Bhashini API
         request_payload = {
-            "ulcaUserId": userID,
-            "ulcaApiKey": ulcaApiKey,
+            "ulcaUserId": "1cfb9fb0efe34593aa1a75189df64199",
+            "ulcaApiKey": "42bb498f9a-14ee-4395-8d6a-57a2f947d32a",
             "pipeLineId": "64392f96daac500b55c543cd",
             "audioData": base64_audio,
             "sourceLanguage": source_language
