@@ -178,7 +178,13 @@ async def translate(request: TranslationRequest):
         "translated_content": translated_content
     }
 # ✅ Speech-to-Text (STT) Endpoint
-@app.post("/bhashini/stt", response_model=dict )
+#from fastapi import FastAPI, File, UploadFile
+#app = FastAPI()
+@app.post("/bhashini/stt")
+async def speech_to_text(language: int, audio: UploadFile = File(...)):
+    return {"transcription": "Sample text"}
+
+@app.post("/bhashini/stt" )
 async def speech_to_text(language: int, audio: UploadFile = File(...)):
     lang_code = languages.get(language)
     if not lang_code:
