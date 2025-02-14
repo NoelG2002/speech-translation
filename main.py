@@ -164,8 +164,8 @@ async def translate(request: TranslationRequest):
 
     headers = {
         "Content-Type": "application/json",
-        "userID": "e832f2d25d21443e8bb90515f1079041",
-        "ulcaApiKey": "39e27ce432-f79c-46f8-9c8c-c0856007cb4b"
+        "userID": ULCA_USER_ID,
+        "ulcaApiKey": ULCA_USER_ID
     }
 
     response = requests.post('https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline', json=payload, headers=headers)
